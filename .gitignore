@@ -1,0 +1,7 @@
+.fappi_venv
+pip.conf
+
+.idea
+
+# mac stuff
+.DS
