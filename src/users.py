@@ -1,12 +1,26 @@
 from typing import Optional
 
-from fastapi import Response, status, APIRouter
+from fastapi import Response, Request, status, APIRouter
 
 
 router = APIRouter(
     prefix="/api/v1/users",
     tags=["Users"],
 )
+
+users = []
+
+@router.post(
+    "/",
+    summary="Endopoint to create a new user",
+    response_description = "Created user object"
+)
+def create_user(request: Request, response: Response):
+    data = request.body()
+    users.append(data)
+    response.status_code = status.HTTP_201_CREATED
+    return data
+
 
 @router.get(
     "/",
