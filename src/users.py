@@ -2,7 +2,8 @@ from typing import Optional
 
 from fastapi import Response, status, APIRouter
 
-from src.models import UserRequestModel
+from src.database import SessionDep
+from src.models import UserRequestModel, UserBaseModel, UserDBModel
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -14,10 +15,14 @@ users = []
 @router.post(
     "/",
     summary="Endpoint to create a new user",
-    response_description = "Created user object"
+    response_description = "Created user object",
+    response_model=UserBaseModel,
 )
-def create_user(user: UserRequestModel, response: Response):
-    users.append(user)
+def create_user(user: UserRequestModel, response: Response, session: SessionDep):
+    user = UserDBModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
+    session.add(user)                        #  sqlachemy model?
+    session.commit()
+    session.refresh(user)
     response.status_code = status.HTTP_201_CREATED
     return user
 
