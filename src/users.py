@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import Response, Request, status, APIRouter
+from fastapi import Response, status, APIRouter
 
+from src.models import UserRequestModel
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -12,14 +13,13 @@ users = []
 
 @router.post(
     "/",
-    summary="Endopoint to create a new user",
+    summary="Endpoint to create a new user",
     response_description = "Created user object"
 )
-def create_user(request: Request, response: Response):
-    data = request.body()
-    users.append(data)
+def create_user(user: UserRequestModel, response: Response):
+    users.append(user)
     response.status_code = status.HTTP_201_CREATED
-    return data
+    return user
 
 
 @router.get(
