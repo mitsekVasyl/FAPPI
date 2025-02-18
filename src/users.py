@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import Response, status, APIRouter
 
 from src.database import SessionDep
-from src.models import UserRequestModel, UserBaseModel, UserDBModel
+from src.models import UserModel
+from src.schema import UserRequestSchema, UserBaseSchema
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -16,10 +17,10 @@ users = []
     "/",
     summary="Endpoint to create a new user",
     response_description = "Created user object",
-    response_model=UserBaseModel,
+    response_model=UserBaseSchema,
 )
-def create_user(user: UserRequestModel, response: Response, session: SessionDep):
-    user = UserDBModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
+def create_user(user: UserRequestSchema, response: Response, session: SessionDep):
+    user = UserModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
     session.add(user)                        #  sqlachemy model?
     session.commit()
     session.refresh(user)
