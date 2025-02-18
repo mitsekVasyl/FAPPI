@@ -11,19 +11,17 @@ router = APIRouter(
     tags=["Users"],
 )
 
-users = []
-
 @router.post(
     "/",
     summary="Endpoint to create a new user",
     response_description = "Created user object",
     response_model=UserBaseSchema,
 )
-def create_user(user: UserRequestSchema, response: Response, session: SessionDep):
+def create_user(user: UserRequestSchema, response: Response, dbsession: SessionDep):
     user = UserModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
-    session.add(user)                        #  sqlachemy model?
-    session.commit()
-    session.refresh(user)
+    dbsession.add(user)                    #  sqlachemy model?
+    dbsession.commit()
+    dbsession.refresh(user)
     response.status_code = status.HTTP_201_CREATED
     return user
 
