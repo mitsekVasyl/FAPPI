@@ -1,6 +1,7 @@
 from typing import Optional
 
-from fastapi import Response, status, APIRouter
+from fastapi import Response, status, APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
@@ -20,7 +21,14 @@ router = APIRouter(
 def create_user(user: UserRequestSchema, response: Response, dbsession: SessionDep):
     user = UserModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
     dbsession.add(user)                    #  sqlachemy model?
-    dbsession.commit()
+    try:
+        dbsession.commit()
+    except IntegrityError as ex:
+        print(ex.orig)  # TODO: add logging
+        if "UNIQUE constraint failed" in str(ex.orig):  # TODO: any other way to distinguish different integrity errors?
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists.")
+        raise
+
     dbsession.refresh(user)
     response.status_code = status.HTTP_201_CREATED
     return user
