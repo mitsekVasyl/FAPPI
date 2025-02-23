@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, VARCHAR
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+metadata = Base.metadata
 
 
 class UserModel(Base):
@@ -14,3 +15,4 @@ class UserModel(Base):
     last_name: str = Column(VARCHAR, nullable=True)
     age: int = Column(Integer, nullable=False)
     password: str = Column(VARCHAR, nullable=False)
+    is_admin: bool = Column(Integer, nullable=False, default=False)
