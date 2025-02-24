@@ -1,11 +1,13 @@
-from typing import Optional
+from typing import List, Annotated
 
-from fastapi import Response, status, APIRouter, HTTPException
+from fastapi import Response, status, APIRouter, HTTPException, Depends
+
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
-from src.schema import UserRequestSchema, UserBaseSchema
+from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -39,25 +41,25 @@ def create_user(user: UserRequestSchema, response: Response, dbsession: SessionD
     tags = ["Users"],
     summary = "Endpoint to retrieve users",
     response_description = "List of users",
+    response_model=List[UserBaseSchema],
 )
-def get_users(response: Response,
-              user_id: Optional[str] = None,
-              user_name: Optional[str] = None,
-              email: Optional[str] = None,
-              first_name: Optional[str] = None,
-              last_name: Optional[str] = None,
-              age: Optional[int] = None,
-    ):
-    # TODO: Try adding multiple query params without bloating function parameters list but maintaining validation
-    #  (maybe Pydantic model?)
+def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Response, dbsession: SessionDep):
     """
     Endpoint to retrieve users with request parameters.
-
-    **user_id**: optional. Filter parameter
     """
-    response.status_code = status.HTTP_200_OK
-    users = [{"user_id": user_id} for _ in range(10)]
+    filter_params = query_params.model_dump()
+    limit = filter_params.pop("limit")
+    filter_conditions = []
+    for param, value in filter_params.items():
+        if value is not None:
+            filter_conditions.append(getattr(UserModel, param) == value)
 
+    if filter_conditions:
+        users = dbsession.query(UserModel).filter(and_(*filter_conditions)).limit(limit).all()
+    else:
+        users = dbsession.query(UserModel).limit(limit).all()
+
+    response.status_code = status.HTTP_200_OK
     return users
 
 
