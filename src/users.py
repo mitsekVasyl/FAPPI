@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
-from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams
+from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams, USER_ID_PATH_PARAM
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -68,16 +68,17 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     tags = ["Users"],
     summary = "Endpoint to retrieve user by ID",
     response_description = "User object",
+    response_model=UserBaseSchema,
 )
-def get_user(response: Response, user_id: str):
+def get_user(response: Response, dbsession: SessionDep, user_id: str = USER_ID_PATH_PARAM):
     """
     Endpoint to retrieve user info by user_id.
 
     **user_id**: required. Path parameter
     """
-    exists = 0 < int(user_id) < 100  # TODO: rework with actual implementation for exists check
-    if not exists:
-        response.status_code = status.HTTP_404_NOT_FOUND
-        return {"message": f"User with {user_id=} not found"}
+    user = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
+
     response.status_code = status.HTTP_200_OK
-    return {"user_id": user_id}
+    return user
