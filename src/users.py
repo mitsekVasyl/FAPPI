@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
-from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
+from src.schema import UserCreateSchema, UserResponseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -18,9 +18,9 @@ router = APIRouter(
     "/",
     summary="Endpoint to create a new user",
     response_description = "Created user object",
-    response_model=UserBaseSchema,
+    response_model=UserResponseSchema,
 )
-def create_user(user: UserRequestSchema, response: Response, dbsession: SessionDep):
+def create_user(user: UserCreateSchema, response: Response, dbsession: SessionDep):
     user = UserModel(**user.model_dump())
     dbsession.add(user)
     try:
@@ -41,7 +41,7 @@ def create_user(user: UserRequestSchema, response: Response, dbsession: SessionD
     tags = ["Users"],
     summary = "Endpoint to retrieve users",
     response_description = "List of users",
-    response_model=List[UserBaseSchema],
+    response_model=List[UserResponseSchema],
 )
 def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Response, dbsession: SessionDep):
     """
@@ -68,7 +68,7 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     tags = ["Users"],
     summary = "Endpoint to retrieve user by ID",
     response_description = "User object",
-    response_model=UserBaseSchema,
+    response_model=UserResponseSchema,
 )
 def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     """
@@ -88,7 +88,7 @@ def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_P
     "/{user_id}",
     summary = "Endpoint to update user by ID",
     response_description = "Updated user object",
-    response_model=UserBaseSchema,
+    response_model=UserResponseSchema,
 )
 def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()

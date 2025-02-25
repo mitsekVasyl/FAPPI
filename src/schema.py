@@ -20,7 +20,6 @@ class UserQueryParams(BaseModel):
 
 
 class UserBaseSchema(BaseModel):
-    id: int = Field(gt=0)
     username: str = Field(pattern=USERNAME_PATTERN, max_length=50)
     email: EmailStr = Field(max_length=100)
     first_name: Optional[str] = Field(max_length=100, default=None)
@@ -28,7 +27,11 @@ class UserBaseSchema(BaseModel):
     age: int = Field(ge=0, le=150)
 
 
-class UserRequestSchema(UserBaseSchema):
+class UserResponseSchema(UserBaseSchema):
+    id: int = Field(gt=0)
+
+
+class UserCreateSchema(UserBaseSchema):
     password: str = Field(max_length=100)
 
 
