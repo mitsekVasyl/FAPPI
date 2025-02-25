@@ -103,3 +103,18 @@ def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = US
     dbsession.refresh(existing_user)
 
     return existing_user
+
+
+@router.delete(
+    "/{user_id}",
+    summary = "Endpoint to delete user by ID",
+)
+def update_user(dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+    existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
+
+    dbsession.delete(existing_user)
+    dbsession.commit()
+
+    return existing_user
