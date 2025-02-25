@@ -1,5 +1,5 @@
 from operator import and_
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ def query_user(db: Session, user_id: int) -> Optional[UserModel]:
     return db.query(UserModel).filter(UserModel.id == user_id).first()
 
 
-def query_users(db: Session, filter_params: dict) -> List[UserModel]:
+def query_users(db: Session, filter_params: dict) -> List[Type[UserModel]]:
     limit = filter_params.pop("limit")
     filter_conditions = []
     for param, value in filter_params.items():
