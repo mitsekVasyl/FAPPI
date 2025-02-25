@@ -2,12 +2,12 @@ from typing import List, Annotated
 
 from fastapi import Response, status, APIRouter, HTTPException, Depends
 
-from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
 from src.schema import UserCreateSchema, UserResponseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
+from src import users_persister
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -24,17 +24,13 @@ router = APIRouter(
     }
 )
 def create_user(user: UserCreateSchema, response: Response, dbsession: SessionDep):
-    user = UserModel(**user.model_dump())
-    dbsession.add(user)
     try:
-        dbsession.commit()
+        user = users_persister.save_user(dbsession, UserModel(**user.model_dump()))
     except IntegrityError as ex:
         print(ex.orig)  # TODO: add logging
         if "UNIQUE constraint failed" in str(ex.orig):  # TODO: any other way to distinguish different integrity errors?
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists.")
         raise
-
-    dbsession.refresh(user)
     response.status_code = status.HTTP_201_CREATED
     return user
 
@@ -51,16 +47,7 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     Endpoint to retrieve users with request parameters.
     """
     filter_params = query_params.model_dump()
-    limit = filter_params.pop("limit")
-    filter_conditions = []
-    for param, value in filter_params.items():
-        if value is not None:
-            filter_conditions.append(getattr(UserModel, param) == value)
-
-    if filter_conditions:
-        users = dbsession.query(UserModel).filter(and_(*filter_conditions)).limit(limit).all()
-    else:
-        users = dbsession.query(UserModel).limit(limit).all()
+    users = users_persister.query_users(dbsession, filter_params)
 
     response.status_code = status.HTTP_200_OK
     return users
@@ -82,7 +69,7 @@ def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_P
 
     **user_id**: required. Path parameter
     """
-    user = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+    user = users_persister.query_user(dbsession, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
 
@@ -100,16 +87,11 @@ def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_P
     }
 )
 def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
-    existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+    existing_user = users_persister.query_user(dbsession, user_id)
     if not existing_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
 
-    for attr, value in user.model_dump().items():
-        if value is not None:
-            setattr(existing_user, attr, value)
-
-    dbsession.commit()
-    dbsession.refresh(existing_user)
+    users_persister.update_user(dbsession, user, existing_user)
 
     return existing_user
 
@@ -121,12 +103,12 @@ def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = US
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     }
 )
-def update_user(dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
-    existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+def delete_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+    existing_user = users_persister.query_user(dbsession, user_id)
     if not existing_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
 
-    dbsession.delete(existing_user)
-    dbsession.commit()
+    users_persister.delete_user(dbsession, existing_user)
 
-    return existing_user
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return {"message": "No Content"}
