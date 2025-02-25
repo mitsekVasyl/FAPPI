@@ -19,6 +19,9 @@ router = APIRouter(
     summary="Endpoint to create a new user",
     response_description = "Created user object",
     response_model=UserResponseSchema,
+    responses={
+        status.HTTP_409_CONFLICT: {"description": "User already exists"},
+    }
 )
 def create_user(user: UserCreateSchema, response: Response, dbsession: SessionDep):
     user = UserModel(**user.model_dump())
@@ -69,6 +72,9 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     summary = "Endpoint to retrieve user by ID",
     response_description = "User object",
     response_model=UserResponseSchema,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    }
 )
 def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     """
@@ -89,6 +95,9 @@ def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_P
     summary = "Endpoint to update user by ID",
     response_description = "Updated user object",
     response_model=UserResponseSchema,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    }
 )
 def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
@@ -108,6 +117,9 @@ def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = US
 @router.delete(
     "/{user_id}",
     summary = "Endpoint to delete user by ID",
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    }
 )
 def update_user(dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
