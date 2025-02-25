@@ -21,8 +21,8 @@ router = APIRouter(
     response_model=UserBaseSchema,
 )
 def create_user(user: UserRequestSchema, response: Response, dbsession: SessionDep):
-    user = UserModel(**user.model_dump())  # TODO: maybe there is another way to map pydantic model into
-    dbsession.add(user)                    #  sqlachemy model?
+    user = UserModel(**user.model_dump())
+    dbsession.add(user)
     try:
         dbsession.commit()
     except IntegrityError as ex:
