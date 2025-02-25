@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.database import SessionDep
 from src.models import UserModel
-from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams, USER_ID_PATH_PARAM
+from src.schema import UserRequestSchema, UserBaseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
 
 router = APIRouter(
     prefix="/api/v1/users",
@@ -70,7 +70,7 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     response_description = "User object",
     response_model=UserBaseSchema,
 )
-def get_user(response: Response, dbsession: SessionDep, user_id: str = USER_ID_PATH_PARAM):
+def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
     """
     Endpoint to retrieve user info by user_id.
 
@@ -82,3 +82,24 @@ def get_user(response: Response, dbsession: SessionDep, user_id: str = USER_ID_P
 
     response.status_code = status.HTTP_200_OK
     return user
+
+
+@router.put(
+    "/{user_id}",
+    summary = "Endpoint to update user by ID",
+    response_description = "Updated user object",
+    response_model=UserBaseSchema,
+)
+def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+    existing_user: UserModel = dbsession.query(UserModel).filter(UserModel.id == user_id).first()
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
+
+    for attr, value in user.model_dump().items():
+        if value is not None:
+            setattr(existing_user, attr, value)
+
+    dbsession.commit()
+    dbsession.refresh(existing_user)
+
+    return existing_user
