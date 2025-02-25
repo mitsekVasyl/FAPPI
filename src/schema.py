@@ -32,6 +32,8 @@ class UserResponseSchema(UserBaseSchema):
 
 
 class UserCreateSchema(UserBaseSchema):
+    model_config = ConfigDict(extra='forbid')
+
     password: str = Field(max_length=100)
 
 
