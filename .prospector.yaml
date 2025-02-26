@@ -6,7 +6,7 @@ doc-warnings: false
 
 ignore-paths:
   - migrations
-  - fappi_venv
+  - .venv
 
 
 # Tools

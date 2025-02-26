@@ -1,5 +1,0 @@
-alembic
-fastapi[standard]
-email-validator
-pydantic
-sqlalchemy

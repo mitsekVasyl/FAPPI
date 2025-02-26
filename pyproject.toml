@@ -1,0 +1,22 @@
+[project]
+name = "fappi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+# TODO: set package versions
+dependencies = [
+    "alembic",
+    "fastapi",
+    "email-validator",
+    "pydantic",
+    "sqlalchemy",
+]
+
+[dependency-groups]
+dev = [
+    "fastapi[standard]",
+]
+test = [
+    "pytest",
+]

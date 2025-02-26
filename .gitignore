@@ -1,7 +1,6 @@
 __pycache__
-.fappi_venv
+.venv
 src/database.db
-pip.conf
 
 .idea
 

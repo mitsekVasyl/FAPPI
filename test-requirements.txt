@@ -1,4 +1,0 @@
-# static code analysis tools
-prospector
-
-# testing tools
