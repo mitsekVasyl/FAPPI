@@ -20,3 +20,6 @@ dev = [
 test = [
     "pytest",
 ]
+
+[build-system]
+requires = ["uv>=0.6.3"]
