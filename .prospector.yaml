@@ -1,0 +1,42 @@
+output-format: text
+
+strictness: medium
+test-warnings: false  # TODO: no tests for now
+doc-warnings: false
+
+ignore-paths:
+  - migrations
+  - fappi_venv
+
+
+# Tools
+# Default tools are explicitly listed for convenience
+pylint:
+  run: true
+
+pycodestyle:
+  run: true  # TODO: enable
+  options:
+    max-line-length: 120
+
+mccabe:  # cyclomatic complexity analysis
+  run: false
+
+pydocstyle:  # warn about violations of the PEP257 Docstring Conventions
+  run: false
+
+pyflakes:  # pylint analog
+  run: false
+
+dodgy:  # finds secret keys, passwords, AWS tokens or source control diffs
+  run: false
+
+
+# Additional tools
+# Not used yet
+
+#mypy:
+#  run: true
+
+#bandit:
+#  run: true
