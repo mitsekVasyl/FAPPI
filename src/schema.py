@@ -11,7 +11,7 @@ USER_ID_PATH_PARAM = Path(gt=0)
 class UserQueryParams(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
-    id: Optional[str] = Field(gt=0, default=None)
+    id: Optional[int] = Field(gt=0, default=None)
     username: Optional[str] = Field(pattern=USERNAME_PATTERN, max_length=50, min_length=1, default=None)
     first_name: Optional[str] = Field(max_length=100, default=None)
     last_name: Optional[str] = Field(max_length=100, default=None)
