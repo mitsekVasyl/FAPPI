@@ -1,6 +1,6 @@
 __pycache__
 .venv
-src/database.db
+database.db
 
 .idea
 
