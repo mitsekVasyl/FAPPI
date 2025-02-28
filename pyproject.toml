@@ -11,7 +11,8 @@ dependencies = [
     "email-validator",
     "pydantic",
     "sqlalchemy",
-    "bcrypt"
+    "bcrypt",
+    "python-jose"
 ]
 
 [dependency-groups]
