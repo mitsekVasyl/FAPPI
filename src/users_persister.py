@@ -3,11 +3,13 @@ from typing import List, Optional, Type
 
 from sqlalchemy.orm import Session
 
+from src.auth.auth_utils import hash_password
 from src.models import UserModel
 from src.schema import UserUpdateSchema
 
 
 def save_user(db: Session, user: UserModel) -> UserModel:
+    user.password = hash_password(user.password)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -34,6 +36,7 @@ def query_users(db: Session, filter_params: dict) -> List[Type[UserModel]]:
 
 
 def update_user(db: Session, user: UserUpdateSchema, existing_user: UserModel) -> None:
+    # TODO: handle cases when value is intentionally None
     for attr, value in user.model_dump().items():
         if value is not None:
             setattr(existing_user, attr, value)
