@@ -16,3 +16,9 @@ class UserModel(Base):
     age: int = Column(Integer, nullable=False)
     password: str = Column(VARCHAR, nullable=False)
     is_admin: bool = Column(Integer, nullable=False, server_default=false())
+
+    # TODO: add more fields
+    # is_active
+    # create_date
+    # mod_date
+    # is_email_verified
