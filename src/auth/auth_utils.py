@@ -20,8 +20,8 @@ def hash_password(password: str) -> bytes:
     return hashpw(password.encode('utf-8'), gensalt())
 
 
-def verify_password(password: str, hashed_password: bytes) -> bool:
-    return checkpw(password.encode('utf-8'), hashed_password)
+def verify_password(password: str, hashed_password: str) -> bool:
+    return checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 def generate_access_token(username: str, user_id: int) -> str:
@@ -32,7 +32,9 @@ def generate_access_token(username: str, user_id: int) -> str:
 
 def verify_access_token(token: Annotated[str, Depends(bearer_dep)]) -> dict:
     try:
+        _, token = token.split(' ')
         user_info = jwt.decode(token, key=SECRET, algorithms=[ALGO])
         return user_info
     except JWTError as ex:
+        print(ex)  # TODO: setup logging
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Failed access token verification") from ex
