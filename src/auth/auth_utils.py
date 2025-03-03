@@ -38,3 +38,11 @@ def verify_access_token(token: Annotated[str, Depends(bearer_dep)]) -> dict:
     except JWTError as ex:
         print(ex)  # TODO: setup logging
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Failed access token verification") from ex
+
+
+def authorize_user_request(user_id, user_info: dict) -> None:
+    if not user_info.get("is_admin", False):
+        is_owner = user_info["user_id"] == user_id
+        if not is_owner:
+            print("Not owned user_id request.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

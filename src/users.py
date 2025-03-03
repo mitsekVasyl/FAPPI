@@ -4,6 +4,7 @@ from fastapi import Response, status, APIRouter, HTTPException, Depends
 
 from sqlalchemy.exc import IntegrityError
 
+from src.auth.auth_utils import verify_access_token, authorize_user_request
 from src.database import SessionDep
 from src.models import UserModel
 from src.schema import UserCreateSchema, UserResponseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
@@ -42,11 +43,15 @@ def create_user(user: UserCreateSchema, response: Response, dbsession: SessionDe
     response_description = "List of users",
     response_model=List[UserResponseSchema],
 )
-def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Response, dbsession: SessionDep):
+def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Response, dbsession: SessionDep,
+              user_info: Annotated[dict, Depends(verify_access_token)]):
     """
     Endpoint to retrieve users with request parameters.
     """
     filter_params = query_params.model_dump()
+    if not user_info.get("is_admin", False): # hide other users for regular users
+        filter_params.update({"id": user_info["user_id"]})
+
     users = users_persister.query_users(dbsession, filter_params)
 
     response.status_code = status.HTTP_200_OK
@@ -63,12 +68,15 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     }
 )
-def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+def get_user(response: Response, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
+             user_id: int = USER_ID_PATH_PARAM):
     """
     Endpoint to retrieve user info by user_id.
 
     **user_id**: required. Path parameter
     """
+    authorize_user_request(user_id, user_info)
+
     user = users_persister.query_user(dbsession, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
@@ -86,7 +94,10 @@ def get_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_P
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     }
 )
-def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
+                user_id: int = USER_ID_PATH_PARAM):
+    authorize_user_request(user_id, user_info)
+
     existing_user = users_persister.query_user(dbsession, user_id)
     if not existing_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
@@ -103,7 +114,10 @@ def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_id: int = US
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     }
 )
-def delete_user(response: Response, dbsession: SessionDep, user_id: int = USER_ID_PATH_PARAM):
+def delete_user(response: Response, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
+                user_id: int = USER_ID_PATH_PARAM):
+    authorize_user_request(user_id, user_info)
+
     existing_user = users_persister.query_user(dbsession, user_id)
     if not existing_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id=} not found")
