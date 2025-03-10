@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 USERNAME_PATTERN = r'[A-Za-z0-9]+'
 
 USER_ID_PATH_PARAM = Path(gt=0)
-
+NOT_PROVIDED_UPDATE_VALUE = '_not_provided'
 
 class UserQueryParams(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -40,9 +40,9 @@ class UserCreateSchema(UserBaseSchema):
 class UserUpdateSchema(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
-    username: Optional[str] = Field(pattern=USERNAME_PATTERN, max_length=50, default=None)
-    email: Optional[EmailStr] = Field(max_length=100, default=None)
-    first_name: Optional[str] = Field(max_length=100, default=None)
-    last_name: Optional[str] = Field(max_length=100, default=None)
-    age: Optional[int] = Field(ge=0, le=150, default=None)
-    password: Optional[str] = Field(max_length=100, default=None)
+    username: Optional[str] = Field(pattern=USERNAME_PATTERN, max_length=50, default=NOT_PROVIDED_UPDATE_VALUE)
+    email: Optional[EmailStr] = Field(max_length=100, default=NOT_PROVIDED_UPDATE_VALUE)
+    first_name: Optional[str] = Field(max_length=100, default=NOT_PROVIDED_UPDATE_VALUE)
+    last_name: Optional[str] = Field(max_length=100, default=NOT_PROVIDED_UPDATE_VALUE)
+    age: Optional[int] = Field(ge=0, le=150, default=NOT_PROVIDED_UPDATE_VALUE)
+    password: Optional[str] = Field(max_length=100, default=NOT_PROVIDED_UPDATE_VALUE)

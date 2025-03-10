@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.auth_utils import hash_password
 from src.models import UserModel
-from src.schema import UserUpdateSchema
+from src.schema import UserUpdateSchema, NOT_PROVIDED_UPDATE_VALUE
 
 
 def save_user(db: Session, user: UserModel) -> UserModel:
@@ -36,9 +36,9 @@ def query_users(db: Session, filter_params: dict) -> List[Type[UserModel]]:
 
 
 def update_user(db: Session, user: UserUpdateSchema, existing_user: UserModel) -> None:
-    # TODO: handle cases when value is intentionally None
+    """Update existing user fields. Skips attributes that was not provided."""
     for attr, value in user.model_dump().items():
-        if value is not None:
+        if value != NOT_PROVIDED_UPDATE_VALUE:
             setattr(existing_user, attr, value)
 
     db.commit()
