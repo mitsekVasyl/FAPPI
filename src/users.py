@@ -69,7 +69,7 @@ def get_users(query_params: Annotated[UserQueryParams, Depends()], response: Res
     }
 )
 def get_user(response: Response, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
-             user_id: int = USER_ID_PATH_PARAM):
+             user_id: Annotated[int, USER_ID_PATH_PARAM]):
     """
     Endpoint to retrieve user info by user_id.
 
@@ -95,7 +95,7 @@ def get_user(response: Response, dbsession: SessionDep, user_info: Annotated[dic
     }
 )
 def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
-                user_id: int = USER_ID_PATH_PARAM):
+                user_id: Annotated[int, USER_ID_PATH_PARAM]):
     authorize_user_request(user_id, user_info)
 
     existing_user = users_persister.query_user(dbsession, user_id)
@@ -115,7 +115,7 @@ def update_user(user: UserUpdateSchema, dbsession: SessionDep, user_info: Annota
     }
 )
 def delete_user(response: Response, dbsession: SessionDep, user_info: Annotated[dict, Depends(verify_access_token)],
-                user_id: int = USER_ID_PATH_PARAM):
+                user_id: Annotated[int, USER_ID_PATH_PARAM]):
     authorize_user_request(user_id, user_info)
 
     existing_user = users_persister.query_user(dbsession, user_id)
