@@ -2,6 +2,7 @@ __pycache__
 .venv
 .env
 database.db
+test_database.db
 
 .idea
 

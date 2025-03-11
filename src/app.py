@@ -12,5 +12,10 @@ def on_startup():
     create_db_and_tables()
 
 
+@app.get('/heartbeat')
+async def heartbeat():
+    return {'status': 'ok'}
+
+
 app.include_router(users_router)
 app.include_router(auth_router)
