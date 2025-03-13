@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from sqlalchemy import text
 
@@ -47,3 +49,25 @@ def test_user_update():
     user['id'] = response.json()["id"]
 
     return user
+
+
+@pytest.fixture(scope='session', name='test_user_get_fxt')
+def test_user_get():
+    print('Creating test user update fixture.')
+    user = dict(
+        username='test_user',
+        email='test_user@example.com',
+        first_name='User',
+        last_name='Regular',
+        age=21,
+        password='1234'
+    )
+
+    for i in range(2):
+        new_user = deepcopy(user)
+        # update fields with unique constraint
+        new_user['username'] = new_user['username'] + str(i)
+        new_user['email'] = str(i) + new_user['email']
+        test_app.post('/api/v1/users', json=new_user)
+
+    return new_user

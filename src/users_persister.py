@@ -28,6 +28,7 @@ def query_users(db: Session, filter_params: dict) -> List[Type[UserModel]]:
             filter_conditions.append(getattr(UserModel, param) == value)
 
     if filter_conditions:
+        # TODO: FIX: fails for single condition or if filter conditions more than 2
         users = db.query(UserModel).filter(and_(*filter_conditions)).limit(limit).all()
     else:
         users = db.query(UserModel).limit(limit).all()

@@ -10,6 +10,7 @@ NOT_PROVIDED_UPDATE_VALUE = '_not_provided'
 
 class UserQueryParams(BaseModel):
     model_config = ConfigDict(extra='forbid')
+    # TODO: missing email param
 
     id: Optional[int] = Field(gt=0, default=None)
     username: Optional[str] = Field(pattern=USERNAME_PATTERN, max_length=50, min_length=1, default=None)

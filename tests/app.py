@@ -23,7 +23,7 @@ def get_test_db_session():
 
 
 def verify_access_token_override():
-    return {"user_id": 10007}
+    return {"user_id": 10007, 'is_admin': True}
 
 
 app.dependency_overrides = {
