@@ -52,3 +52,15 @@ def test_create_user_bad_input(user, expected_msg, teardown_db):
     body = response.json()
     assert response.status_code == 422
     assert body['detail'][0]['msg'] == expected_msg
+
+
+def test_create_user_conflict(teardown_db):
+    """Test that user with the same username or email cannot be created."""
+    user = get_user_dict_w_all_attrs()
+    response = test_app.post('/api/v1/users', json=user)
+    assert response.status_code == 201
+
+    response = test_app.post('/api/v1/users', json=user)
+    body = response.json()
+    assert response.status_code == 409
+    assert body['detail'] == 'User already exists.'
