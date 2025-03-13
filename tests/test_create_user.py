@@ -5,17 +5,6 @@ import pytest
 from tests.app import test_app
 
 
-def get_user_dict_w_all_attrs():
-    return {
-        'username': 'test_user',
-        'email': "vm.test@vm.com",
-        'first_name': 'v_test',
-        'last_name': 'm_test',
-        'age': 43,
-        'password': '1234'
-    }
-
-
 def create_user_validation_cases():
     invalid_cases = (
         ({'username': 564738}, 'Input should be a valid string'),
@@ -30,22 +19,14 @@ def create_user_validation_cases():
         ({'age': -13}, 'Input should be greater than or equal to 0'),
     )
     for case, expected_msg in invalid_cases:
-        user = deepcopy(get_user_dict_w_all_attrs())
-        user.update(case)
-        yield user, expected_msg
+        yield case, expected_msg
 
 
-def test_create_user_all_fields(teardown_db):
-    user = get_user_dict_w_all_attrs()
-    response = test_app.post('/api/v1/users', json=user)
-
-    body = response.json()
-    assert response.status_code == 201
-    assert body['username'] == user['username']
-
-
-@pytest.mark.parametrize('user,expected_msg', create_user_validation_cases())
-def test_create_user_bad_input(user, expected_msg, teardown_db):
+@pytest.mark.parametrize('fields_to_update, expected_msg', create_user_validation_cases())
+def test_create_user_bad_input(fields_to_update, expected_msg, test_user_create_fxt, teardown_db):
+    """Test that update user data is validated as expected."""
+    user = deepcopy(test_user_create_fxt)
+    user.update(fields_to_update)
 
     response = test_app.post('/api/v1/users', json=user)
 
@@ -54,13 +35,21 @@ def test_create_user_bad_input(user, expected_msg, teardown_db):
     assert body['detail'][0]['msg'] == expected_msg
 
 
-def test_create_user_conflict(teardown_db):
-    """Test that user with the same username or email cannot be created."""
-    user = get_user_dict_w_all_attrs()
+def test_create_user_all_fields(test_user_create_fxt, teardown_db):
+    """Test that user is created."""
+    user = deepcopy(test_user_create_fxt)
+    user.update({'username': 'frankenstain', 'email': 'franki@example.com'})
     response = test_app.post('/api/v1/users', json=user)
-    assert response.status_code == 201
 
-    response = test_app.post('/api/v1/users', json=user)
+    body = response.json()
+    assert response.status_code == 201
+    assert body['username'] == user['username']
+
+
+def test_create_user_conflict(test_user_create_fxt, teardown_db):
+    """Test that user with the same username or email cannot be created."""
+    response = test_app.post('/api/v1/users', json=test_user_create_fxt)
+
     body = response.json()
     assert response.status_code == 409
     assert body['detail'] == 'User already exists.'
