@@ -27,3 +27,11 @@ def test_get_users_multi_filter(test_user_get_fxt, teardown_db):
     assert response.status_code == 200
     assert len(body) == 1
     assert body[0]["username"] == test_user_get_fxt["username"]
+
+
+def test_get_user():
+    user_id = 3
+    response = test_app.get(f'/api/v1/users/{user_id}')
+
+    assert response.status_code == 200
+    assert response.json()["id"] == user_id

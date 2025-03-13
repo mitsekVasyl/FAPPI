@@ -53,7 +53,7 @@ def test_user_update():
 
 @pytest.fixture(scope='session', name='test_user_get_fxt')
 def test_user_get():
-    print('Creating test user update fixture.')
+    print('Creating test user get fixture.')
     user = dict(
         username='test_user',
         email='test_user@example.com',
