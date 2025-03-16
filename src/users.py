@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.auth.auth_utils import verify_access_token, authorize_user_request
 from src.database import SessionDep
+from src.exceptions import UniqueConstraintError
 from src.models import UserModel
 from src.schema import UserCreateSchema, UserResponseSchema, UserQueryParams, USER_ID_PATH_PARAM, UserUpdateSchema
 from src import users_persister
@@ -28,9 +29,10 @@ def create_user(user: UserCreateSchema, response: Response, dbsession: SessionDe
     try:
         user = users_persister.save_user(dbsession, UserModel(**user.model_dump()))
     except IntegrityError as ex:
-        print(ex.orig)  # TODO: add logging
-        if "UNIQUE constraint failed" in str(ex.orig):  # TODO: any other way to distinguish different integrity errors?
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists.")
+        message = str(ex.orig)
+        print(ex)  # TODO: add loggingg
+        if "UNIQUE constraint failed" in message:
+            raise UniqueConstraintError(message)
         raise
     response.status_code = status.HTTP_201_CREATED
     return user

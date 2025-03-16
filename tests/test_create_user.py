@@ -52,4 +52,4 @@ def test_create_user_conflict(test_user_create_fxt, teardown_db):
 
     body = response.json()
     assert response.status_code == 409
-    assert body['detail'] == 'User already exists.'
+    assert body['detail'] == 'Database entry already exists: attribute=users.email.'
