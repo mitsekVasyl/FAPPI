@@ -15,7 +15,7 @@ def test_get_users_single_filter(test_user_get_fxt, teardown_db):
 
 def test_get_users_multi_filter(test_user_get_fxt, teardown_db):
     query = {
-        "id": 1,
+        "id": 2,
         "username": test_user_get_fxt["username"],
         "first_name": test_user_get_fxt["first_name"],
         "last_name": test_user_get_fxt["last_name"],
