@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.database import create_db_and_tables
+from src.exceptions import UniqueConstraintError, unique_constraint_handler
 from src.users import router as users_router
 from src.auth.auth import router as auth_router
 
@@ -23,3 +24,6 @@ async def heartbeat():
 
 app.include_router(users_router)
 app.include_router(auth_router)
+
+
+app.add_exception_handler(UniqueConstraintError, unique_constraint_handler)
